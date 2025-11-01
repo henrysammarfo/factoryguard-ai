@@ -1,0 +1,15 @@
+{
+  "name": "factoryguard-simulator",
+  "version": "1.0.0",
+  "scripts": {
+    "simulate": "tsx sensor-simulator.ts"
+  },
+  "dependencies": {
+    "mqtt": "^5.3.5",
+    "dotenv": "^16.4.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "@types/node": "^20.11.5"
+  }
+}
