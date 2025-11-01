@@ -1,8 +1,21 @@
 # 🏭 FactoryGuard AI
 
+> **🔗 GitHub Repository:** https://github.com/henrysammarfo/factoryguard-ai  
+> **🚀 Live Demo:** https://factoryguard-ai.vercel.app/  
+> **📖 Full Submission:** [SUBMISSION.md](./SUBMISSION.md)
+
 **AI-Powered Predictive Maintenance Platform Built on supOS-CE**
 
 FactoryGuard AI is an intelligent industrial monitoring system that leverages supOS-CE's Unified Namespace (UNS), DBConnect, EventFlow, and SourceFlow to deliver real-time equipment monitoring, AI-powered failure prediction, and automated maintenance scheduling.
+
+## 🎯 Quick Links for Judges/Reviewers
+
+- **📋 Complete Submission Document:** [SUBMISSION.md](./SUBMISSION.md)
+- **🔧 Setup Instructions:** [SETUP.md](./SETUP.md)
+- **🚀 Deployment Guide:** [DEPLOY_LIVE.md](./DEPLOY_LIVE.md)
+- **🔌 supOS Integration Proof:** [SUPOS_INTEGRATION_PROOF.md](./SUPOS_INTEGRATION_PROOF.md)
+- **💻 Source Code:** Browse the repository
+- **📚 API Documentation:** [docs/API_SETUP_GUIDE.md](./docs/API_SETUP_GUIDE.md)
 
 ## 🎯 supOS Integration
 
@@ -131,4 +144,4 @@ MIT License - Feel free to use for your projects!
 
 ---
 
-**Ready to build?** Start with [SETUP.md](./SETUP.md) → [API_KEYS.md](./API_KEYS.md) → [CURSOR_PROMPT.md](./CURSOR_PROMPT.md)
+**Ready to build?** Start with [SETUP.md](./SETUP.md) → [API_KEYS.md](./API_KEYS.md)
