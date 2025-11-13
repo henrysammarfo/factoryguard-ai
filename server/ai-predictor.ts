@@ -1,5 +1,10 @@
 import { HfInference } from '@huggingface/inference'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import * as dotenv from 'dotenv'
+import * as path from 'path'
+
+// Load environment variables
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY)
 
