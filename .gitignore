@@ -18,6 +18,20 @@ yarn-error.log*
 
 # env files
 .env*
+!.env.example
+
+# sensitive files
+password.txt
+API_KEYS.md
+local-data.json
+test-mqtt.js
+test-supos-data.js
+
+# deployment files
+volumes/
+supos-projects/
+mosquitto.conf
+nodered-flow.json
 
 # vercel
 .vercel

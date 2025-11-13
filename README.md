@@ -4,9 +4,9 @@
 > **🚀 Live Demo:** https://factoryguard-ai.vercel.app/  
 > **📖 Full Submission:** [SUBMISSION.md](./SUBMISSION.md)
 
-**AI-Powered Predictive Maintenance Platform Built on supOS-CE**
+**AI-Powered Predictive Maintenance Platform with supOS Integration**
 
-FactoryGuard AI is an intelligent industrial monitoring system that leverages supOS-CE's Unified Namespace (UNS), DBConnect, EventFlow, and SourceFlow to deliver real-time equipment monitoring, AI-powered failure prediction, and automated maintenance scheduling.
+FactoryGuard AI is an intelligent industrial monitoring system that implements supOS principles including Unified Namespace (UNS) for MQTT-based data exchange, delivering real-time equipment monitoring, AI-powered failure prediction, and automated maintenance scheduling.
 
 ## 🎯 Quick Links for Judges/Reviewers
 
@@ -19,14 +19,14 @@ FactoryGuard AI is an intelligent industrial monitoring system that leverages su
 
 ## 🎯 supOS Integration
 
-**This project is built on supOS-CE and demonstrates real integration with:**
+**This project implements supOS principles and demonstrates real industrial IoT integration with:**
 
-- ✅ **UNS (Unified Namespace)** - ISA-95 standardized data model for equipment hierarchy
-- ✅ **DBConnect** - PostgreSQL + TimescaleDB for time-series data storage
-- ✅ **EventFlow** - Real-time WebSocket event streaming for live updates
-- ✅ **SourceFlow** - MQTT data ingestion supporting 300+ industrial protocols
-- ✅ **REST API** - Direct integration with supOS API for equipment and sensor data
-- ✅ **Dashboard Integration** - Embeddable UI components for supOS interface
+- ✅ **UNS (Unified Namespace)** - ISA-95 standardized MQTT topic hierarchy
+- ✅ **MQTT Broker Integration** - Cloud-based MQTT for industrial data exchange
+- ✅ **Real-time Event Streaming** - WebSocket updates for live monitoring
+- ✅ **Time-series Data Storage** - PostgreSQL for sensor data and analytics
+- ✅ **Industrial Data Ingestion** - MQTT-based sensor data collection
+- ✅ **Predictive Maintenance** - AI/ML models for equipment failure prediction
 
 📄 **See [SUPOS_INTEGRATION_PROOF.md](./SUPOS_INTEGRATION_PROOF.md) for complete integration documentation**
 
@@ -97,35 +97,26 @@ npm run server:ai
 - supOS-CE - Industrial data platform
 
 **supOS Integration**:
-- supOS REST API
-- PostgreSQL (DBConnect)
-- TimescaleDB (Time-series data)
-- EventFlow (WebSocket events)
-- SourceFlow (MQTT ingestion)
+- MQTT-based UNS (Unified Namespace)
+- Industrial IoT data protocols
+- Real-time event streaming
+- Time-series data analytics
+- Predictive maintenance AI
 
 ## 🔑 Environment Setup
 
-Create a `.env.local` file with:
+Copy `.env.example` to `.env.local` and fill in your API keys:
 
-\`\`\`env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-
-# Hugging Face
-HUGGINGFACE_API_KEY=your_hf_key
-
-# MQTT
-MQTT_BROKER_URL=your_mqtt_broker
-MQTT_USERNAME=your_username
-MQTT_PASSWORD=your_password
-
-# supOS
-SUPOS_API_URL=http://127.0.0.1:8088
-SUPOS_API_KEY=your_supos_api_key
+\`\`\`bash
+cp .env.example .env.local
 \`\`\`
 
-See [SETUP.md](./SETUP.md) and [API_KEYS.md](./API_KEYS.md) for detailed instructions.
+Required environment variables:
+- **Supabase**: Database and authentication
+- **Hugging Face**: AI/ML predictions
+- **supOS CE**: Industrial IoT platform integration
+
+See [SETUP.md](./SETUP.md) for detailed setup instructions.
 
 ## 📊 Expected Benefits
 

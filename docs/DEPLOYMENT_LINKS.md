@@ -60,3 +60,4 @@ Once deployed, the following endpoints will be available:
 - Ensure all environment variables are properly set before deployment
 - Test the application locally before deploying
 - Consider setting up CI/CD for automatic deployments on code changes
+

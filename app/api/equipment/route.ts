@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase/admin'
+import * as fs from 'fs'
+import * as path from 'path'
 
 export async function GET(request: Request) {
   try {
@@ -7,24 +8,33 @@ export async function GET(request: Request) {
     const status = searchParams.get('status')
     const type = searchParams.get('type')
 
-    let query = supabaseAdmin
-      .from('equipment')
-      .select(`
-        *,
-        alerts:alerts(count),
-        latest_reading:sensor_readings(*)
-          .order('timestamp', { ascending: false })
-          .limit(1)
-      `)
+    // Load local data
+    const dataFile = path.resolve(process.cwd(), 'local-data.json')
+    let localData: any = { equipment: {}, sensorReadings: [], alerts: [] }
 
-    if (status) query = query.eq('status', status)
-    if (type) query = query.eq('type', type)
+    try {
+      if (fs.existsSync(dataFile)) {
+        localData = JSON.parse(fs.readFileSync(dataFile, 'utf8'))
+      }
+    } catch (error) {
+      console.log('[FactoryGuard] No local data file, returning empty data')
+    }
 
-    const { data, error } = await query.order('name')
+    // Convert equipment object to array
+    let equipment = Object.values(localData.equipment || {})
 
-    if (error) throw error
+    // Apply filters
+    if (status) {
+      equipment = equipment.filter((eq: any) => eq.status === status)
+    }
+    if (type) {
+      equipment = equipment.filter((eq: any) => eq.type?.toLowerCase().includes(type.toLowerCase()))
+    }
 
-    return NextResponse.json({ data, success: true })
+    // Sort by name
+    equipment.sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''))
+
+    return NextResponse.json({ data: equipment, success: true })
   } catch (error) {
     console.error('[FactoryGuard] Equipment API error:', error)
     return NextResponse.json(

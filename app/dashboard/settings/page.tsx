@@ -37,6 +37,7 @@ export default function SettingsPage() {
         <TabsList>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="thresholds">Alert Thresholds</TabsTrigger>
+          <TabsTrigger value="data">Data Management</TabsTrigger>
           <TabsTrigger value="integrations">Integrations</TabsTrigger>
           <TabsTrigger value="system">System</TabsTrigger>
         </TabsList>
@@ -132,6 +133,187 @@ export default function SettingsPage() {
                 </div>
               </div>
               <Button onClick={handleSaveSettings}>Save Threshold Settings</Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="data" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Database className="w-5 h-5" />
+                <CardTitle>Data Management</CardTitle>
+              </div>
+              <CardDescription>Manage your equipment data and import/export configurations</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="p-4 border border-border rounded-lg bg-muted/50">
+                  <h4 className="font-semibold mb-2">Current Data Status</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Your system currently has demo/seed data. You can clear this data and import your actual equipment configuration.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (typeof window !== 'undefined') {
+                          localStorage.removeItem('factoryguard_equipment')
+                          localStorage.removeItem('factoryguard_alerts')
+                          localStorage.setItem('factoryguard_data_cleared', 'true')
+                        }
+                        toast({
+                          title: "Seed Data Cleared",
+                          description: "Demo data has been removed. Please import your actual equipment data.",
+                        })
+                        setTimeout(() => window.location.reload(), 1000)
+                      }}
+                    >
+                      Clear Seed Data
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        // Create a sample import template
+                        const template = {
+                          equipment: [
+                            {
+                              id: "your_equipment_id",
+                              name: "Your Equipment Name",
+                              type: "CNC Machine",
+                              location: "workshopA/productionLine1",
+                              manufacturer: "Your Manufacturer",
+                              model: "Model XYZ",
+                              serial_number: "SN123456",
+                              install_date: "2024-01-15",
+                              status: "operational"
+                            }
+                          ],
+                          alerts: [
+                            {
+                              id: "alert_1",
+                              equipment_id: "your_equipment_id",
+                              severity: "warning",
+                              type: "maintenance",
+                              message: "Scheduled maintenance due",
+                              acknowledged: false
+                            }
+                          ]
+                        }
+
+                        const dataStr = JSON.stringify(template, null, 2)
+                        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr)
+
+                        const exportFileDefaultName = 'factoryguard-import-template.json'
+
+                        const linkElement = document.createElement('a')
+                        linkElement.setAttribute('href', dataUri)
+                        linkElement.setAttribute('download', exportFileDefaultName)
+                        linkElement.click()
+
+                        toast({
+                          title: "Import Template Downloaded",
+                          description: "Use this template to format your equipment data for import.",
+                        })
+                      }}
+                    >
+                      Download Import Template
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="p-4 border border-border rounded-lg">
+                  <h4 className="font-semibold mb-2">Import Equipment Data</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Upload a JSON file with your equipment and alert configurations.
+                  </p>
+                  <div className="space-y-2">
+                    <Input
+                      type="file"
+                      accept=".json"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          const reader = new FileReader()
+                          reader.onload = (event) => {
+                            try {
+                              const data = JSON.parse(event.target?.result as string)
+                              if (data.equipment && data.alerts) {
+                                if (typeof window !== 'undefined') {
+                                  localStorage.setItem('factoryguard_equipment', JSON.stringify(data.equipment))
+                                  localStorage.setItem('factoryguard_alerts', JSON.stringify(data.alerts))
+                                  localStorage.setItem('factoryguard_data_imported', 'true')
+                                }
+                                toast({
+                                  title: "Data Imported Successfully",
+                                  description: `${data.equipment.length} equipment items and ${data.alerts.length} alerts imported.`,
+                                })
+                                setTimeout(() => window.location.reload(), 1000)
+                              } else {
+                                toast({
+                                  title: "Import Failed",
+                                  description: "Invalid file format. Please use the provided template.",
+                                  variant: "destructive",
+                                })
+                              }
+                            } catch (error) {
+                              toast({
+                                title: "Import Failed",
+                                description: "Error parsing JSON file.",
+                                variant: "destructive",
+                              })
+                            }
+                          }
+                          reader.readAsText(file)
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="p-4 border border-border rounded-lg">
+                  <h4 className="font-semibold mb-2">Data Backup</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Export your current equipment and alert data for backup.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        const equipment = JSON.parse(localStorage.getItem('factoryguard_equipment') || '[]')
+                        const alerts = JSON.parse(localStorage.getItem('factoryguard_alerts') || '[]')
+
+                        const backup = {
+                          equipment,
+                          alerts,
+                          exported_at: new Date().toISOString(),
+                          version: "1.0"
+                        }
+
+                        const dataStr = JSON.stringify(backup, null, 2)
+                        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr)
+
+                        const exportFileDefaultName = `factoryguard-backup-${new Date().toISOString().split('T')[0]}.json`
+
+                        const linkElement = document.createElement('a')
+                        linkElement.setAttribute('href', dataUri)
+                        linkElement.setAttribute('download', exportFileDefaultName)
+                        linkElement.click()
+
+                        toast({
+                          title: "Backup Created",
+                          description: "Your data has been exported successfully.",
+                        })
+                      }
+                    }}
+                  >
+                    Create Backup
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

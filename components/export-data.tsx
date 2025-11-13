@@ -15,7 +15,9 @@ export function ExportData({ data, filename, type = "equipment" }: ExportDataPro
 
   const exportToCSV = () => {
     try {
+      console.log('[Export] Starting CSV export with data:', data)
       if (!data || data.length === 0) {
+        console.log('[Export] No data available')
         toast({
           title: "No data to export",
           description: "There is no data available to export.",
@@ -45,11 +47,27 @@ export function ExportData({ data, filename, type = "equipment" }: ExportDataPro
       const a = document.createElement("a")
       a.href = url
       a.download = `${filename}-${new Date().toISOString().split("T")[0]}.csv`
+      a.style.display = 'none'
       document.body.appendChild(a)
-      a.click()
+
+      // Try the standard click method first
+      try {
+        a.click()
+      } catch (e) {
+        // Fallback for some browsers
+        console.log('[Export] Using fallback download method')
+        const event = new MouseEvent('click', {
+          view: window,
+          bubbles: true,
+          cancelable: true
+        })
+        a.dispatchEvent(event)
+      }
+
       document.body.removeChild(a)
       window.URL.revokeObjectURL(url)
 
+      console.log('[Export] CSV export successful, filename:', a.download)
       toast({
         title: "Export successful",
         description: `Downloaded ${a.download}`,
@@ -80,8 +98,21 @@ export function ExportData({ data, filename, type = "equipment" }: ExportDataPro
     const a = document.createElement("a")
     a.href = url
     a.download = `${filename}-${new Date().toISOString().split("T")[0]}.json`
+    a.style.display = 'none'
     document.body.appendChild(a)
-    a.click()
+
+    try {
+      a.click()
+    } catch (e) {
+      console.log('[Export] Using fallback download method for JSON')
+      const event = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+      })
+      a.dispatchEvent(event)
+    }
+
     document.body.removeChild(a)
     window.URL.revokeObjectURL(url)
 

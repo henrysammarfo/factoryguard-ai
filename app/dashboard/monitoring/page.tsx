@@ -89,87 +89,89 @@ export default function MonitoringPage() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {equipment.map((eq) => (
-                <Link key={eq.id} href={`/dashboard/equipment/${eq.id}`}>
-                  <Card className="hover:border-primary/50 transition-colors cursor-pointer">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-foreground">{eq.name}</h3>
-                          <p className="text-xs text-muted-foreground">{eq.location}</p>
+              {equipment.map((eq) => {
+                return (
+                  <Link key={eq.id} href={`/dashboard/equipment/${eq.id}`}>
+                    <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-foreground">{eq.name}</h3>
+                            <p className="text-xs text-muted-foreground">{eq.location}</p>
+                          </div>
+                          <Badge
+                            variant={
+                              eq.status === "operational"
+                                ? "default"
+                                : eq.status === "warning"
+                                  ? "secondary"
+                                  : "destructive"
+                            }
+                            className={
+                              eq.status === "operational"
+                                ? "bg-chart-1/10 text-chart-1 border-chart-1/20"
+                                : eq.status === "warning"
+                                  ? "bg-accent/10 text-accent border-accent/20"
+                                  : ""
+                            }
+                          >
+                            {eq.status === "operational" && <CheckCircle2Icon className="w-3 h-3 mr-1" />}
+                            {eq.status === "warning" && <AlertTriangleIcon className="w-3 h-3 mr-1" />}
+                            {eq.status === "critical" && <XCircleIcon className="w-3 h-3 mr-1" />}
+                            {eq.status.charAt(0).toUpperCase() + eq.status.slice(1)}
+                          </Badge>
                         </div>
-                        <Badge
-                          variant={
-                            eq.status === "operational"
-                              ? "default"
-                              : eq.status === "warning"
-                                ? "secondary"
-                                : "destructive"
-                          }
-                          className={
-                            eq.status === "operational"
-                              ? "bg-chart-1/10 text-chart-1 border-chart-1/20"
-                              : eq.status === "warning"
-                                ? "bg-accent/10 text-accent border-accent/20"
-                                : ""
-                          }
-                        >
-                          {eq.status === "operational" && <CheckCircle2Icon className="w-3 h-3 mr-1" />}
-                          {eq.status === "warning" && <AlertTriangleIcon className="w-3 h-3 mr-1" />}
-                          {eq.status === "critical" && <XCircleIcon className="w-3 h-3 mr-1" />}
-                          {eq.status.charAt(0).toUpperCase() + eq.status.slice(1)}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="flex items-center gap-2">
-                          <ThermometerIcon className="w-4 h-4 text-muted-foreground" />
-                          <div>
-                            <div className="text-xs text-muted-foreground">Temp</div>
-                            <div className="text-sm font-semibold text-foreground">{eq.temperature}°C</div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="flex items-center gap-2">
+                            <ThermometerIcon className="w-4 h-4 text-muted-foreground" />
+                            <div>
+                              <div className="text-xs text-muted-foreground">Temp</div>
+                              <div className="text-sm font-semibold text-foreground">{eq.temperature}°C</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <ActivityIcon className="w-4 h-4 text-muted-foreground" />
+                            <div>
+                              <div className="text-xs text-muted-foreground">Vibration</div>
+                              <div className="text-sm font-semibold text-foreground">{eq.vibration} mm/s</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <GaugeIcon className="w-4 h-4 text-muted-foreground" />
+                            <div>
+                              <div className="text-xs text-muted-foreground">Pressure</div>
+                              <div className="text-sm font-semibold text-foreground">{eq.pressure} bar</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <ZapIcon className="w-4 h-4 text-muted-foreground" />
+                            <div>
+                              <div className="text-xs text-muted-foreground">Energy</div>
+                              <div className="text-sm font-semibold text-foreground">{eq.energy} kW</div>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <ActivityIcon className="w-4 h-4 text-muted-foreground" />
-                          <div>
-                            <div className="text-xs text-muted-foreground">Vibration</div>
-                            <div className="text-sm font-semibold text-foreground">{eq.vibration} mm/s</div>
+                        <div className="pt-2 border-t border-border">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">Health Score</span>
+                            <span className="font-semibold text-foreground">{eq.health}%</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-1.5 mt-1">
+                            <div
+                              className={`h-1.5 rounded-full transition-all ${
+                                eq.health >= 85 ? "bg-chart-1" : eq.health >= 70 ? "bg-accent" : "bg-destructive"
+                              }`}
+                              style={{ width: `${eq.health}%` }}
+                            />
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <GaugeIcon className="w-4 h-4 text-muted-foreground" />
-                          <div>
-                            <div className="text-xs text-muted-foreground">Pressure</div>
-                            <div className="text-sm font-semibold text-foreground">{eq.pressure} bar</div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <ZapIcon className="w-4 h-4 text-muted-foreground" />
-                          <div>
-                            <div className="text-xs text-muted-foreground">Energy</div>
-                            <div className="text-sm font-semibold text-foreground">{eq.energy} kW</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="pt-2 border-t border-border">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">Health Score</span>
-                          <span className="font-semibold text-foreground">{eq.health}%</span>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-1.5 mt-1">
-                          <div
-                            className={`h-1.5 rounded-full transition-all ${
-                              eq.health >= 85 ? "bg-chart-1" : eq.health >= 70 ? "bg-accent" : "bg-destructive"
-                            }`}
-                            style={{ width: `${eq.health}%` }}
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
+                      </CardContent>
+                    </Card>
+                  </Link>
+                )
+              })}
             </div>
           </CardContent>
         </Card>

@@ -1,9 +1,15 @@
 "use client"
 
+import React, { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Activity,
   AlertTriangle,
@@ -17,6 +23,7 @@ import {
   Download,
   ArrowLeft,
   XCircle,
+  Plus,
 } from "lucide-react"
 import { Line, LineChart, Area, AreaChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
@@ -76,6 +83,15 @@ export default function EquipmentDetailPage() {
   const { toast } = useToast()
   const equipment = getEquipmentById(equipmentId)
 
+  // Maintenance scheduling state
+  const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false)
+  const [maintenanceType, setMaintenanceType] = useState("")
+  const [scheduledDate, setScheduledDate] = useState("")
+  const [description, setDescription] = useState("")
+  const [technician, setTechnician] = useState("")
+  const [estimatedDuration, setEstimatedDuration] = useState("")
+  const [scheduledMaintenance, setScheduledMaintenance] = useState<any[]>([])
+
   if (!equipment) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
@@ -112,6 +128,52 @@ export default function EquipmentDetailPage() {
       title: "Report Exported",
       description: `Equipment report for ${equipment.name} has been downloaded.`,
     })
+  }
+
+  const handleScheduleMaintenance = async () => {
+    if (!maintenanceType || !scheduledDate || !description) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      // Add to scheduled maintenance list
+      const newMaintenance = {
+        id: Date.now().toString(),
+        type: maintenanceType,
+        scheduledDate,
+        description,
+        technician: technician || "Unassigned",
+        estimatedDuration: estimatedDuration || "TBD",
+        status: "scheduled",
+        equipmentId: equipmentId,
+      }
+
+      setScheduledMaintenance(prev => [...prev, newMaintenance])
+
+      toast({
+        title: "Maintenance Scheduled",
+        description: `Maintenance for ${equipment.name} has been scheduled for ${new Date(scheduledDate).toLocaleDateString()}.`,
+      })
+
+      // Reset form
+      setMaintenanceType("")
+      setScheduledDate("")
+      setDescription("")
+      setTechnician("")
+      setEstimatedDuration("")
+      setIsScheduleDialogOpen(false)
+    } catch (error) {
+      toast({
+        title: "Scheduling Failed",
+        description: "Failed to schedule maintenance. Please try again.",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -412,19 +474,96 @@ export default function EquipmentDetailPage() {
                   <CardTitle>Maintenance Schedule</CardTitle>
                   <CardDescription>Upcoming and past maintenance activities</CardDescription>
                 </div>
-                <Button
-                  size="sm"
-                  className="gap-2"
-                  onClick={() =>
-                    toast({
-                      title: "Feature Coming Soon",
-                      description: "Maintenance scheduling will be available soon.",
-                    })
-                  }
-                >
-                  <Calendar className="w-4 h-4" />
-                  Schedule Maintenance
-                </Button>
+                <Dialog open={isScheduleDialogOpen} onOpenChange={setIsScheduleDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      Schedule Maintenance
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Schedule Maintenance</DialogTitle>
+                      <DialogDescription>
+                        Schedule maintenance for {equipment.name}. Fill in the details below.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="maintenance-type" className="text-right">
+                          Type
+                        </Label>
+                        <Select value={maintenanceType} onValueChange={setMaintenanceType}>
+                          <SelectTrigger className="col-span-3">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="preventive">Preventive</SelectItem>
+                            <SelectItem value="corrective">Corrective</SelectItem>
+                            <SelectItem value="predictive">Predictive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="scheduled-date" className="text-right">
+                          Date
+                        </Label>
+                        <Input
+                          id="scheduled-date"
+                          type="datetime-local"
+                          value={scheduledDate}
+                          onChange={(e) => setScheduledDate(e.target.value)}
+                          className="col-span-3"
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="technician" className="text-right">
+                          Technician
+                        </Label>
+                        <Input
+                          id="technician"
+                          value={technician}
+                          onChange={(e) => setTechnician(e.target.value)}
+                          placeholder="Optional"
+                          className="col-span-3"
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="duration" className="text-right">
+                          Duration (hrs)
+                        </Label>
+                        <Input
+                          id="duration"
+                          type="number"
+                          value={estimatedDuration}
+                          onChange={(e) => setEstimatedDuration(e.target.value)}
+                          placeholder="Optional"
+                          className="col-span-3"
+                        />
+                      </div>
+                      <div className="grid grid-cols-4 items-start gap-4">
+                        <Label htmlFor="description" className="text-right pt-2">
+                          Description
+                        </Label>
+                        <Textarea
+                          id="description"
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          placeholder="Describe the maintenance work..."
+                          className="col-span-3"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setIsScheduleDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleScheduleMaintenance}>
+                        Schedule Maintenance
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             </CardHeader>
             <CardContent>
@@ -440,6 +579,32 @@ export default function EquipmentDetailPage() {
                   <p className="text-sm text-foreground mb-1">{equipment.nextMaintenance}</p>
                   <p className="text-xs text-muted-foreground">Routine inspection and lubrication</p>
                 </div>
+
+                {/* Scheduled Maintenance List */}
+                {scheduledMaintenance.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-semibold text-foreground">Recently Scheduled</h4>
+                    {scheduledMaintenance.map((maintenance) => (
+                      <div key={maintenance.id} className="p-4 rounded-lg border border-accent/50 bg-accent/5">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-5 h-5 text-accent" />
+                            <span className="font-semibold text-foreground capitalize">{maintenance.type} Maintenance</span>
+                          </div>
+                          <Badge className="bg-accent/10 text-accent border-accent/20">Scheduled</Badge>
+                        </div>
+                        <p className="text-sm text-foreground mb-1">
+                          {new Date(maintenance.scheduledDate).toLocaleDateString()} at {new Date(maintenance.scheduledDate).toLocaleTimeString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground mb-2">{maintenance.description}</p>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span>Technician: {maintenance.technician}</span>
+                          <span>Duration: {maintenance.estimatedDuration} {maintenance.estimatedDuration !== "TBD" ? "hrs" : ""}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 <div className="space-y-3">
                   <h4 className="text-sm font-semibold text-foreground">Maintenance History</h4>

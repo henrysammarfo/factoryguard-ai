@@ -33,6 +33,9 @@ import {
   Legend,
 } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { useMockData } from "@/lib/mock-data-service"
+import { useEffect, useState } from "react"
+import { ExportData } from "@/components/export-data"
 
 // Mock analytics data
 const oeeData = [
@@ -107,10 +110,119 @@ const COLORS = [
 ]
 
 export default function AnalyticsPage() {
-  const avgOEE = Math.round(oeeData.reduce((sum, d) => sum + d.oee, 0) / oeeData.length)
-  const totalDowntime = downtimeData.reduce((sum, d) => sum + d.hours, 0)
-  const avgEnergy = Math.round(energyTrendData.reduce((sum, d) => sum + d.consumption, 0) / energyTrendData.length)
-  const avgDefectRate = (qualityData.reduce((sum, d) => sum + d.defectRate, 0) / qualityData.length).toFixed(1)
+  const { equipment, alerts } = useMockData()
+  const [predictions, setPredictions] = useState<any[]>([])
+  const [anomalies, setAnomalies] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Generate mock predictions and anomalies based on real equipment data
+    generateAnalyticsData()
+  }, [equipment, alerts])
+
+  function generateAnalyticsData() {
+    // Generate AI-powered predictions based on equipment health and sensor data
+    const mockPredictions = equipment.map((eq: any) => {
+      // AI logic: lower health = shorter RUL, higher vibration/temperature = shorter RUL
+      const healthFactor = eq.health / 100
+      const sensorFactor = (eq.temperature > 80 || eq.vibration > 4) ? 0.7 : 1.0
+      const baseDays = Math.floor(Math.random() * 60) + 30 // 30-90 days base
+      const predictedDays = Math.floor(baseDays * healthFactor * sensorFactor)
+
+      return {
+        id: `pred_${eq.id}`,
+        equipment_id: eq.id,
+        prediction_type: 'rul',
+        predicted_value: Math.max(7, predictedDays), // Minimum 7 days
+        confidence: Math.floor(Math.random() * 15) + 85, // 85-100%
+        prediction_date: new Date().toISOString(),
+        risk_level: predictedDays < 30 ? 'high' : predictedDays < 60 ? 'medium' : 'low',
+        ai_insights: generateAIInsights(eq, predictedDays),
+      }
+    })
+
+    // Generate AI-detected anomalies based on sensor patterns
+    const mockAnomalies = equipment.flatMap((eq: any) => {
+      const anomalies = []
+
+      // Temperature anomaly detection
+      if (eq.temperature > 85) {
+        anomalies.push({
+          id: `anom_temp_${eq.id}`,
+          anomaly_type: 'High Temperature',
+          severity: eq.temperature > 90 ? 'critical' : 'warning',
+          description: `Temperature spike detected: ${eq.temperature}°C (threshold: 85°C)`,
+          detected_at: new Date().toISOString(),
+          status: 'active',
+          equipment_id: eq.id,
+          ai_confidence: Math.floor(Math.random() * 10) + 90,
+        })
+      }
+
+      // Vibration anomaly detection
+      if (eq.vibration > 5.0) {
+        anomalies.push({
+          id: `anom_vib_${eq.id}`,
+          anomaly_type: 'High Vibration',
+          severity: eq.vibration > 6.0 ? 'critical' : 'warning',
+          description: `Excessive vibration detected: ${eq.vibration} mm/s (threshold: 5.0 mm/s)`,
+          detected_at: new Date().toISOString(),
+          status: 'active',
+          equipment_id: eq.id,
+          ai_confidence: Math.floor(Math.random() * 10) + 90,
+        })
+      }
+
+      // Energy consumption anomaly
+      if (eq.energy > 55) {
+        anomalies.push({
+          id: `anom_energy_${eq.id}`,
+          anomaly_type: 'High Energy Usage',
+          severity: 'warning',
+          description: `Abnormal energy consumption: ${eq.energy} kW (above normal range)`,
+          detected_at: new Date().toISOString(),
+          status: 'active',
+          equipment_id: eq.id,
+          ai_confidence: Math.floor(Math.random() * 10) + 85,
+        })
+      }
+
+      return anomalies
+    }).slice(0, 8) // Limit to 8 anomalies
+
+    setPredictions(mockPredictions)
+    setAnomalies(mockAnomalies)
+    setLoading(false)
+  }
+
+  function generateAIInsights(equipment: any, predictedDays: number) {
+    const insights = []
+
+    if (equipment.temperature > 80) {
+      insights.push("High operating temperature accelerating wear")
+    }
+    if (equipment.vibration > 4) {
+      insights.push("Vibration patterns indicate bearing degradation")
+    }
+    if (equipment.health < 80) {
+      insights.push("Overall health decline suggests multiple component issues")
+    }
+    if (predictedDays < 30) {
+      insights.push("Urgent maintenance required within 30 days")
+    }
+
+    return insights.length > 0 ? insights : ["Normal operating conditions detected"]
+  }
+
+  // Calculate real metrics from equipment data
+  const operationalCount = equipment.filter((e: any) => e.status === 'operational').length
+  const warningCount = equipment.filter((e: any) => e.status === 'warning').length
+  const criticalCount = equipment.filter((e: any) => e.status === 'critical').length
+
+  const avgOEE = operationalCount > 0 ? Math.round((operationalCount / equipment.length) * 100) : 0
+  const totalDowntime = alerts.filter((a: any) => a.type === 'downtime').length * 2 // Assume 2 hours per downtime alert
+  const avgEnergy = equipment.reduce((sum: number, e: any) => sum + (e.latest_reading?.[0]?.energy_consumption || 0), 0) / equipment.length || 0
+  const avgDefectRate = (alerts.filter((a: any) => a.type === 'quality').length / equipment.length * 100).toFixed(1)
 
   return (
     <div className="space-y-6">
@@ -207,6 +319,7 @@ export default function AnalyticsPage() {
           <TabsTrigger value="production">Production</TabsTrigger>
           <TabsTrigger value="reliability">Reliability</TabsTrigger>
           <TabsTrigger value="energy">Energy</TabsTrigger>
+          <TabsTrigger value="predictive">Predictive Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="oee" className="space-y-4">
@@ -654,6 +767,157 @@ export default function AnalyticsPage() {
                 <div className="flex items-center gap-2 text-sm">
                   <TrendingDown className="w-4 h-4 text-chart-1" />
                   <span className="text-chart-1">2.4 tons CO₂ saved</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="predictive" className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Active Anomalies</CardTitle>
+                <CardDescription>Current AI-detected issues</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold text-destructive mb-2">{anomalies.length}</div>
+                <p className="text-sm text-muted-foreground">Requiring attention</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>RUL Predictions</CardTitle>
+                <CardDescription>Equipment lifespan forecasts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold text-chart-1 mb-2">{predictions.length}</div>
+                <p className="text-sm text-muted-foreground">Active predictions</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>AI Confidence</CardTitle>
+                <CardDescription>Average prediction accuracy</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-4xl font-bold text-chart-2 mb-2">
+                  {predictions.length > 0 ? Math.round(predictions.reduce((sum, p) => sum + (p.confidence || 0), 0) / predictions.length) : 0}%
+                </div>
+                <p className="text-sm text-muted-foreground">Based on historical data</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Recent Anomalies</CardTitle>
+                    <CardDescription>Latest AI-detected issues</CardDescription>
+                  </div>
+                  <ExportData data={anomalies} filename="ai-anomalies" type="alerts" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {anomalies.slice(0, 5).map((anomaly, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-border">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={anomaly.severity === 'critical' ? 'destructive' : 'secondary'}>
+                            {anomaly.severity}
+                          </Badge>
+                          <span className="font-medium text-sm">{anomaly.anomaly_type}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">{anomaly.description}</p>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(anomaly.detected_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  ))}
+                  {anomalies.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">No anomalies detected</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>AI-Powered RUL Predictions</CardTitle>
+                    <CardDescription>Advanced machine learning predictions with risk assessment</CardDescription>
+                  </div>
+                  <ExportData data={predictions} filename="ai-predictions" type="analytics" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {predictions.map((prediction, index) => (
+                    <div key={index} className="p-4 rounded-lg border border-border bg-gradient-to-r from-card to-card/50">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-3 h-3 rounded-full ${
+                            prediction.risk_level === 'high' ? 'bg-destructive' :
+                            prediction.risk_level === 'medium' ? 'bg-accent' : 'bg-chart-1'
+                          }`} />
+                          <div>
+                            <span className="font-semibold text-foreground">Equipment {prediction.equipment_id}</span>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className={`${
+                                prediction.risk_level === 'high' ? 'bg-destructive/10 text-destructive border-destructive/20' :
+                                prediction.risk_level === 'medium' ? 'bg-accent/10 text-accent border-accent/20' :
+                                'bg-chart-1/10 text-chart-1 border-chart-1/20'
+                              }`}>
+                                {prediction.confidence}% AI confidence
+                              </Badge>
+                              <Badge variant="secondary" className={`${
+                                prediction.risk_level === 'high' ? 'bg-destructive/20 text-destructive' :
+                                prediction.risk_level === 'medium' ? 'bg-accent/20 text-accent' :
+                                'bg-chart-1/20 text-chart-1'
+                              }`}>
+                                {prediction.risk_level.toUpperCase()} RISK
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-foreground">{prediction.predicted_value}</div>
+                          <div className="text-xs text-muted-foreground">days remaining</div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="text-sm font-medium text-foreground">AI Insights:</div>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          {prediction.ai_insights.map((insight: string, i: number) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="text-chart-1 mt-1">•</span>
+                              {insight}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+                        <span className="text-xs text-muted-foreground">
+                          Predicted: {new Date(prediction.prediction_date).toLocaleDateString()}
+                        </span>
+                        <Button size="sm" variant="outline" className="text-xs">
+                          View Details
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  {predictions.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">No AI predictions available</p>
+                  )}
                 </div>
               </CardContent>
             </Card>

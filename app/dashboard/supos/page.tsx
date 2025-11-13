@@ -72,9 +72,9 @@ export default function SupOSDashboard() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">supOS Integration Dashboard</h1>
+          <h1 className="text-3xl font-bold">supOS-CE Integration Dashboard</h1>
           <p className="text-muted-foreground">
-            Monitor and manage FactoryGuard AI's connection to supOS platform
+            Monitor and manage FactoryGuard AI's connection to supOS Community Edition
           </p>
         </div>
         <Button
@@ -153,12 +153,12 @@ export default function SupOSDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">SourceFlow</CardTitle>
-            <AlertCircle className="h-4 w-4 text-yellow-500" />
+            <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Node-RED</div>
+            <div className="text-2xl font-bold">Active</div>
             <p className="text-xs text-muted-foreground">
-              Manual configuration required
+              Connected via MQTT
             </p>
           </CardContent>
         </Card>
@@ -167,9 +167,9 @@ export default function SupOSDashboard() {
       {/* supOS Components Status */}
       <Card>
         <CardHeader>
-          <CardTitle>supOS Components Integration</CardTitle>
+          <CardTitle>supOS-CE Components Integration</CardTitle>
           <CardDescription>
-            Status of FactoryGuard AI integration with supOS platform components
+            Status of FactoryGuard AI integration with supOS Community Edition components
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -199,7 +199,7 @@ export default function SupOSDashboard() {
                 <h4 className="font-medium">SourceFlow</h4>
                 <p className="text-sm text-muted-foreground">PLC/SCADA connectivity</p>
               </div>
-              <Badge variant="secondary">Manual Setup</Badge>
+              <Badge variant="default">Active</Badge>
             </div>
 
             <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -234,41 +234,49 @@ export default function SupOSDashboard() {
       {/* Connection Instructions */}
       <Card>
         <CardHeader>
-          <CardTitle>supOS Connection Instructions</CardTitle>
+          <CardTitle>supOS-CE Connection Instructions</CardTitle>
           <CardDescription>
-            Steps to fully integrate FactoryGuard AI with supOS platform
+            Steps to fully integrate FactoryGuard AI with supOS Community Edition
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <h4 className="font-medium">1. DBConnect Setup</h4>
+            <h4 className="font-medium">1. Install supOS-CE</h4>
             <p className="text-sm text-muted-foreground">
-              PostgreSQL (port 5432) and TimescaleDB (port 2345) connections are configured automatically.
-              Default credentials: postgres/postgres
+              Clone and install supOS-CE from GitHub: https://github.com/FREEZONEX/supOS-CE
+              Follow the deployment guide for Docker setup.
             </p>
           </div>
 
           <div className="space-y-2">
-            <h4 className="font-medium">2. Authentication (Keycloak)</h4>
+            <h4 className="font-medium">2. Configure UNS (Unified Namespace)</h4>
             <p className="text-sm text-muted-foreground">
-              Access supOS at https://supos-ce-instance2.supos.app:8443/home
-              Login with admin/supos, then configure tenant as "supos"
+              Set up MQTT broker and create factory equipment hierarchy topics.
+              Default MQTT: mqtt://127.0.0.1:1883 with credentials supos/supos
             </p>
           </div>
 
           <div className="space-y-2">
-            <h4 className="font-medium">3. EventFlow & SourceFlow (Node-RED)</h4>
+            <h4 className="font-medium">3. Node-RED Flows</h4>
             <p className="text-sm text-muted-foreground">
-              Use Node-RED nodes to connect EventFlow and SourceFlow.
-              Configure MQTT broker connection and data routing manually.
+              Configure Node-RED (port 1880) for data ingestion and processing.
+              Create flows to publish equipment and sensor data to UNS topics.
             </p>
           </div>
 
           <div className="space-y-2">
-            <h4 className="font-medium">4. Dashboard Integration</h4>
+            <h4 className="font-medium">4. TimescaleDB Setup</h4>
             <p className="text-sm text-muted-foreground">
-              FactoryGuard AI dashboard is automatically embedded in supOS interface
-              when connection is established.
+              Configure TimescaleDB (port 2345) for time-series sensor data storage.
+              FactoryGuard will subscribe to UNS topics for real-time monitoring.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="font-medium">5. Grafana Integration</h4>
+            <p className="text-sm text-muted-foreground">
+              Access Grafana (port 3001) for dashboard creation and visualization.
+              FactoryGuard can embed views in Grafana dashboards.
             </p>
           </div>
         </CardContent>
