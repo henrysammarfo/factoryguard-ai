@@ -1,0 +1,20 @@
+name: factoryguard-ai
+version: "0.1.0"
+description: "FactoryGuard AI Data Source Integration"
+author: "FactoryGuard Team"
+type: datasource
+
+supos:
+  apiVersion: v1
+
+entry:
+  main: index.js
+
+services:
+  - name: factoryguard-datasource
+    type: datasource
+    command: "node index.js"
+
+metadata:
+  category: industrial-iot
+  tags: [ai, predictive-maintenance, iot]

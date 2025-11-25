@@ -1,0 +1,152 @@
+{
+  "name": "FactoryGuard AI",
+  "version": "0.1.0",
+  "description": "AI-powered predictive maintenance for industrial equipment monitoring",
+  "author": "FactoryGuard Team",
+  "category": "Industrial IoT",
+  "type": "web-application",
+
+  "supos": {
+    "version": ">=1.0.0",
+    "namespace": "factoryguard-ai",
+    "permissions": [
+      "mqtt:read",
+      "mqtt:write",
+      "websocket:connect",
+      "database:read",
+      "database:write",
+      "ai:inference"
+    ],
+    "capabilities": [
+      "sourceflow-integration",
+      "eventflow-integration",
+      "dashboard-integration",
+      "alert-management",
+      "equipment-monitoring"
+    ]
+  },
+
+  "entry": {
+    "main": "app/page.tsx",
+    "api": "app/api/",
+    "services": "server/"
+  },
+
+  "dependencies": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+
+  "runtime": {
+    "framework": "next.js",
+    "port": 3000,
+    "environment": [
+      "SUPABASE_URL",
+      "SUPABASE_ANON_KEY",
+      "MQTT_BROKER_URL",
+      "HUGGINGFACE_API_KEY",
+      "SUPOS_CE_ENDPOINT"
+    ]
+  },
+
+  "services": [
+    {
+      "name": "websocket-server",
+      "script": "server/websocket.ts",
+      "port": 8080
+    },
+    {
+      "name": "mqtt-listener",
+      "script": "server/mqtt-listener.ts"
+    },
+    {
+      "name": "ai-predictor",
+      "script": "server/ai-predictor.ts"
+    }
+  ],
+
+  "database": {
+    "schema": "database/schema.sql",
+    "seed": "database/seed.sql"
+  },
+
+  "ui": {
+    "routes": [
+      "/",
+      "/dashboard",
+      "/dashboard/equipment",
+      "/dashboard/monitoring",
+      "/dashboard/analytics",
+      "/dashboard/supos"
+    ],
+    "navigation": {
+      "main": "FactoryGuard AI",
+      "icon": "factory",
+      "menu": [
+        {
+          "label": "Dashboard",
+          "path": "/dashboard",
+          "icon": "dashboard"
+        },
+        {
+          "label": "Equipment",
+          "path": "/dashboard/equipment",
+          "icon": "cog"
+        },
+        {
+          "label": "Monitoring",
+          "path": "/dashboard/monitoring",
+          "icon": "activity"
+        },
+        {
+          "label": "Analytics",
+          "path": "/dashboard/analytics",
+          "icon": "bar-chart"
+        },
+        {
+          "label": "supOS Integration",
+          "path": "/dashboard/supos",
+          "icon": "network"
+        }
+      ]
+    }
+  },
+
+  "integrations": {
+    "supos-ce": {
+      "sourceflow": {
+        "topics": [
+          "factory/+/+/+/equipment/+",
+          "factory/+/+/+/sensors/+"
+        ]
+      },
+      "eventflow": {
+        "rules": [
+          "temperature-threshold",
+          "vibration-anomaly",
+          "pressure-drop"
+        ]
+      },
+      "dashboard": {
+        "widgets": [
+          "equipment-status",
+          "sensor-readings",
+          "ai-predictions",
+          "alert-summary"
+        ]
+      }
+    }
+  },
+
+  "metadata": {
+    "tags": ["predictive-maintenance", "ai", "iot", "industrial", "monitoring"],
+    "industry": "Manufacturing",
+    "features": [
+      "Real-time equipment monitoring",
+      "AI-powered failure prediction",
+      "Automated alert generation",
+      "Historical data analytics",
+      "supOS platform integration"
+    ]
+  }
+}

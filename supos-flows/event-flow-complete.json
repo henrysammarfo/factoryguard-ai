@@ -1,0 +1,150 @@
+[
+    {
+        "id": "factoryguard-eventflow",
+        "type": "tab",
+        "label": "FactoryGuard EventFlow",
+        "disabled": false,
+        "info": "Alert and event processing from supOS to FactoryGuard AI"
+    },
+    {
+        "id": "mqtt-in-sensor-events",
+        "type": "mqtt in",
+        "z": "factoryguard-eventflow",
+        "name": "Sensor Events",
+        "topic": "factory/+/+/+/sensors/+",
+        "qos": "1",
+        "datatype": "json",
+        "broker": "factoryguard-mqtt-broker",
+        "nl": false,
+        "rap": false,
+        "inputs": 0,
+        "x": 130,
+        "y": 100,
+        "wires": [
+            [
+                "threshold-check"
+            ]
+        ]
+    },
+    {
+        "id": "threshold-check",
+        "type": "function",
+        "z": "factoryguard-eventflow",
+        "name": "Threshold Check",
+        "func": "// Extract sensor data\nconst sensorType = msg.payload.sensor_type || 'unknown';\nconst value = parseFloat(msg.payload.value);\nconst equipmentId = msg.payload.equipment_id;\n\n// Define thresholds\nconst thresholds = {\n    temperature: { warning: 80, critical: 90 },\n    vibration: { warning: 5.0, critical: 7.0 },\n    pressure: { warning: 8.0, critical: 10.0 },\n    energy: { warning: 60, critical: 80 },\n    rpm: { warning: 3500, critical: 4000 },\n    load: { warning: 85, critical: 95 }\n};\n\nconst threshold = thresholds[sensorType];\n\nif (!threshold) {\n    // Unknown sensor type, pass through as normal\n    return [null, msg];\n}\n\nlet severity = null;\nif (value >= threshold.critical) {\n    severity = 'critical';\n} else if (value >= threshold.warning) {\n    severity = 'warning';\n}\n\nif (severity) {\n    // Create alert message\n    const alert = {\n        id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,\n        equipment_id: equipmentId,\n        severity: severity,\n        type: sensorType,\n        message: `${sensorType.charAt(0).toUpperCase() + sensorType.slice(1)} ${severity} threshold exceeded: ${value}`,\n        recommended_action: `Check ${sensorType} sensor and equipment condition`,\n        value: value,\n        threshold: severity === 'critical' ? threshold.critical : threshold.warning,\n        timestamp: new Date().toISOString(),\n        source: 'supos_eventflow'\n    };\n    \n    msg.payload = alert;\n    return [msg, null]; // Send to alert output\n} else {\n    // Normal reading\n    return [null, msg]; // Send to normal output\n}",
+        "outputs": 2,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 100,
+        "wires": [
+            [
+                "alert-publisher",
+                "alert-debug"
+            ],
+            [
+                "normal-debug"
+            ]
+        ]
+    },
+    {
+        "id": "alert-publisher",
+        "type": "mqtt out",
+        "z": "factoryguard-eventflow",
+        "name": "Alert Publisher",
+        "topic": "factory/alerts/active",
+        "qos": "1",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "factoryguard-mqtt-broker",
+        "x": 580,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "alert-debug",
+        "type": "debug",
+        "z": "factoryguard-eventflow",
+        "name": "Alert Debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload.severity",
+        "statusType": "auto",
+        "x": 570,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "normal-debug",
+        "type": "debug",
+        "z": "factoryguard-eventflow",
+        "name": "Normal Readings",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 580,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "factoryguard-mqtt-broker",
+        "type": "mqtt-broker",
+        "name": "FactoryGuard MQTT",
+        "broker": "1f3c070f03034f3890cb2c984bc76294.s1.eu.hivemq.cloud",
+        "port": "8883",
+        "tls": "factoryguard-tls",
+        "clientid": "supos-eventflow",
+        "autoConnect": true,
+        "usetls": true,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": "",
+        "credentials": {
+            "user": "factoryguard_client",
+            "password": "Dogbytec@r1"
+        }
+    },
+    {
+        "id": "factoryguard-tls",
+        "type": "tls-config",
+        "name": "HiveMQ TLS",
+        "cert": "",
+        "key": "",
+        "ca": "",
+        "certname": "",
+        "keyname": "",
+        "caname": "",
+        "servername": "1f3c070f03034f3890cb2c984bc76294.s1.eu.hivemq.cloud",
+        "verifyservercert": true,
+        "alpnprotocol": ""
+    }
+]

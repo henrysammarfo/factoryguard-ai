@@ -1,0 +1,205 @@
+[
+    {
+        "id": "factoryguard-sourceflow",
+        "type": "tab",
+        "label": "FactoryGuard SourceFlow",
+        "disabled": false,
+        "info": "Equipment and sensor data from FactoryGuard AI to supOS"
+    },
+    {
+        "id": "mqtt-in-equipment",
+        "type": "mqtt in",
+        "z": "factoryguard-sourceflow",
+        "name": "Equipment Data",
+        "topic": "factory/equipment/+",
+        "qos": "1",
+        "datatype": "json",
+        "broker": "factoryguard-mqtt-broker",
+        "nl": false,
+        "rap": false,
+        "inputs": 0,
+        "x": 130,
+        "y": 100,
+        "wires": [
+            [
+                "equipment-debug",
+                "equipment-db-write"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-in-sensors",
+        "type": "mqtt in",
+        "z": "factoryguard-sourceflow",
+        "name": "Sensor Data",
+        "topic": "factory/+/+/+/sensors/+",
+        "qos": "1",
+        "datatype": "json",
+        "broker": "factoryguard-mqtt-broker",
+        "nl": false,
+        "rap": false,
+        "inputs": 0,
+        "x": 130,
+        "y": 180,
+        "wires": [
+            [
+                "sensor-debug",
+                "sensor-db-write"
+            ]
+        ]
+    },
+    {
+        "id": "equipment-debug",
+        "type": "debug",
+        "z": "factoryguard-sourceflow",
+        "name": "Equipment Debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload.name",
+        "statusType": "auto",
+        "x": 380,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "sensor-debug",
+        "type": "debug",
+        "z": "factoryguard-sourceflow",
+        "name": "Sensor Debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload.sensor_type",
+        "statusType": "auto",
+        "x": 380,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "equipment-db-write",
+        "type": "function",
+        "z": "factoryguard-sourceflow",
+        "name": "Format for DB",
+        "func": "// Format equipment data for database\nmsg.payload = {\n    equipment_id: msg.payload.id,\n    name: msg.payload.name,\n    type: msg.payload.type,\n    status: msg.payload.status,\n    health_score: msg.payload.health_score,\n    location: msg.payload.location,\n    timestamp: new Date().toISOString()\n};\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 120,
+        "wires": [
+            [
+                "db-equipment-insert"
+            ]
+        ]
+    },
+    {
+        "id": "sensor-db-write",
+        "type": "function",
+        "z": "factoryguard-sourceflow",
+        "name": "Format for TSDB",
+        "func": "// Format sensor data for TimescaleDB\nmsg.payload = {\n    equipment_id: msg.payload.equipment_id,\n    sensor_type: msg.payload.sensor_type,\n    value: msg.payload.value,\n    unit: msg.payload.unit,\n    timestamp: msg.payload.timestamp || new Date().toISOString()\n};\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 200,
+        "wires": [
+            [
+                "db-sensor-insert"
+            ]
+        ]
+    },
+    {
+        "id": "db-equipment-insert",
+        "type": "debug",
+        "z": "factoryguard-sourceflow",
+        "name": "PostgreSQL Write",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 120,
+        "wires": [],
+        "info": "In production, replace with postgres node:\nINSERT INTO equipment (id, name, type, status, health_score, location, updated_at)\nVALUES ($equipment_id, $name, $type, $status, $health_score, $location, $timestamp)\nON CONFLICT (id) DO UPDATE SET\n  name = EXCLUDED.name,\n  status = EXCLUDED.status,\n  health_score = EXCLUDED.health_score,\n  updated_at = EXCLUDED.updated_at"
+    },
+    {
+        "id": "db-sensor-insert",
+        "type": "debug",
+        "z": "factoryguard-sourceflow",
+        "name": "TimescaleDB Write",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 200,
+        "wires": [],
+        "info": "In production, replace with postgres node:\nINSERT INTO sensor_readings (equipment_id, sensor_type, value, unit, timestamp)\nVALUES ($equipment_id, $sensor_type, $value, $unit, $timestamp)"
+    },
+    {
+        "id": "factoryguard-mqtt-broker",
+        "type": "mqtt-broker",
+        "name": "FactoryGuard MQTT",
+        "broker": "1f3c070f03034f3890cb2c984bc76294.s1.eu.hivemq.cloud",
+        "port": "8883",
+        "tls": "factoryguard-tls",
+        "clientid": "supos-sourceflow",
+        "autoConnect": true,
+        "usetls": true,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": "",
+        "credentials": {
+            "user": "factoryguard_client",
+            "password": "Dogbytec@r1"
+        }
+    },
+    {
+        "id": "factoryguard-tls",
+        "type": "tls-config",
+        "name": "HiveMQ TLS",
+        "cert": "",
+        "key": "",
+        "ca": "",
+        "certname": "",
+        "keyname": "",
+        "caname": "",
+        "servername": "1f3c070f03034f3890cb2c984bc76294.s1.eu.hivemq.cloud",
+        "verifyservercert": true,
+        "alpnprotocol": ""
+    }
+]

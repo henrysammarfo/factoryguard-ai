@@ -32,7 +32,7 @@ function generateSensorReading(equipmentId: string) {
 const servers: http.Server[] = []
 
 equipmentIds.forEach((equipmentId, index) => {
-  const port = 3000 + index
+  const port = 4000 + index
 
   const server = http.createServer((req, res) => {
     if (req.method === 'GET' && req.url === '/') {
@@ -58,11 +58,11 @@ process.on('SIGINT', () => {
   console.log('\n[Sensor Simulator] Shutting down servers...')
   servers.forEach((server, index) => {
     server.close(() => {
-      console.log(`[Sensor Simulator] Server on port ${3000 + index} closed`)
+      console.log(`[Sensor Simulator] Server on port ${4000 + index} closed`)
     })
   })
   process.exit(0)
 })
 
-console.log(`[Sensor Simulator] Started ${equipmentIds.length} sensor simulators on ports 3000-${3000 + equipmentIds.length - 1}`)
+console.log(`[Sensor Simulator] Started ${equipmentIds.length} sensor simulators on ports 4000-${4000 + equipmentIds.length - 1}`)
 console.log('[Sensor Simulator] Press Ctrl+C to stop')

@@ -1,0 +1,20 @@
+{
+  "name": "factoryguard-ai-plugin",
+  "version": "0.1.0",
+  "description": "supOS plugin for AI-powered predictive maintenance",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.4",
+    "mqtt": "^5.10.1",
+    "@supabase/supabase-js": "^2.45.4",
+    "dotenv": "^17.2.3"
+  },
+  "keywords": ["supos", "plugin", "iot", "ai", "predictive-maintenance"],
+  "author": "FactoryGuard Team",
+  "license": "MIT"
+}

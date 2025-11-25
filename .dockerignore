@@ -1,0 +1,5 @@
+# Fly.io Deployment Files
+.fly/
+
+# Docker
+.dockerignore
