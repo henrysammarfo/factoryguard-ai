@@ -233,8 +233,6 @@ npm run build
 
 - **[INTEGRATION_SUCCESS.md](./INTEGRATION_SUCCESS.md)** - supOS integration report
 - **[SUPOS_LIVE_INTEGRATION.md](./SUPOS_LIVE_INTEGRATION.md)** - Live integration guide
-- **[docs/SUPOS_SETUP_GUIDE.md](./docs/SUPOS_SETUP_GUIDE.md)** - NodeRED setup
-- **[docs/SUPOS_DEMO_SCRIPT.md](./docs/SUPOS_DEMO_SCRIPT.md)** - Demo guide
 - **[docs/TECHNICAL_IMPLEMENTATION.md](./docs/TECHNICAL_IMPLEMENTATION.md)** - Technical details
 
 ---
